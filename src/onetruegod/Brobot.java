@@ -13,21 +13,18 @@ import robocode.WinEvent;
 import robocode.util.Utils;
 
 
-public class Brobot extends AdvancedRobot
-{
+public class Brobot extends AdvancedRobot {
+
 	boolean reverse = false;
 	double enemy; // enemy bearing in rads
 	double eDistance; // enemy's distance from you
-	double velocity;
+	double velocity; // enemy's bearing in rads
 	double offset;
 	private static ArrayList<Color> colorAr;
 	private static Random r;
 	private static int shotCount = 2;
 	private int missedShot = 0;
 
-	/*
-	 *
-	 */
 	public void run() {
 		setAdjustRadarForGunTurn(true);
 		setAdjustGunForRobotTurn(true);
@@ -38,60 +35,73 @@ public class Brobot extends AdvancedRobot
 
 		while(true) {
 
-
+			// The most important part of brobot.
 			randColors();
+
 			double gunTurn = getHeadingRadians() + enemy -
 					getGunHeadingRadians();
-			if(gunTurn > 6){gunTurn*=0.1;}
+
+			if(gunTurn > 6) { 
+				gunTurn*=0.1;
+			}
 
 			initOffset();
 
 			turnGunRightRadians(Utils.normalRelativeAngle(1*gunTurn+offset));
 
-			int x=100, y=0;
-
-			if(getX() <= 100) {
+			/*
+			 * The following helps in avoiding walls. Need to fix issue
+			 * where robot rotates in wrong direction and sticking to the wall
+			 * for too long under certain circumstances.
+			 */
+			if(getX() <= 50) {
 				if((getHeadingRadians()>=3.14/2)&&(getHeadingRadians()<=1.5*3.14)) {
-					x=-x;
+					reverse=true;
+					setTurnRight(90);
 				}
 			}
-			if(getX() >= getBattleFieldWidth()-100) { 
+			if(getX() >= getBattleFieldWidth()-50) { 
 				if((getHeadingRadians()<=3.14/2)||(getHeadingRadians()>=1.5*3.14)) {
-					x=-x;
+					reverse=true;
+					setTurnRight(90);
 				}
 			}
 
-			if(getY() >= getBattleFieldHeight()-100) { 
-				x=x;
+			if(getY() >= getBattleFieldHeight()-50) { 
+				reverse=true;
+				setTurnRight(90);
 			}
 
 			if(getY() <= 100) {
-				x=x;
+				reverse=true;
+				setTurnRight(50);
 			}
+
 
 			if(reverse){
 				ahead(-100);
 			} else {
 				setAhead(100);
 			}
+
+			// The only movement code that isn't wall avoiding related. Yup.
 			setTurnRight(enemy*2.5+3);
 
-			reverse=false;
+			reverse = false;
 			execute();
 		}
 	}
 
 
-	/**
-	 * onScannedRobot: What to do when you see another robot
-	 */
 	public void onScannedRobot(ScannedRobotEvent e) {
+
 		double a = 0.1;
 		enemy = e.getBearingRadians();
 
 
-		double distance=e.getDistance();
+		double distance = e.getDistance();
 
+		// Changes damage according to range, closer range = higher damage
 		if (distance <100) {
 			a= 3;
 		} else if(distance < 400 || e.getVelocity() == 0){
@@ -104,14 +114,11 @@ public class Brobot extends AdvancedRobot
 		}
 
 
-
+		// 
 		double radarTurn = getHeadingRadians() + e.getBearingRadians()-
 				getRadarHeadingRadians();
 
 		setTurnRadarRightRadians(Utils.normalRelativeAngle(1*radarTurn));
-
-		//setTurnRightRadians(getHeadingRadians() -
-		getRadarHeadingRadians();
 
 		eDistance = distance;
 		velocity=e.getVelocity();
@@ -122,6 +129,14 @@ public class Brobot extends AdvancedRobot
 		k = 40;
 
 
+		/*
+		 * Controls firerate a different distances. Maxmium firerate
+		 * when really fast or if target isn't moving (our targeting system
+		 * is great for when targets aren't moving).
+		 * This was essentially a last minute dirtycode quickfix to prevent
+		 * our mediocre targeting system from wasting too much energy on missed shots
+		 * at long range/against hard to hit opponents.
+		 */
 		if(distance < 300 || e.getVelocity() == 0) {
 			setFire(a);
 		}  else {
@@ -129,36 +144,33 @@ public class Brobot extends AdvancedRobot
 				i *= 2;
 				j *= 2;
 				k *= 2;
-			} else {
-				shotCount++;
-				shotCount %= i;
-				if(shotCount == j-1 && distance <=500) {
-					setFire(a);
-					shotCount= 0 ;
-				}
-
-				if (shotCount == k && distance <= 700){
-					setFire(a);
-					shotCount= 0 ;
-				}
-
-				if (shotCount == i-1){
-					setFire(a);
-					shotCount= 0 ;
-				}
-
 			}
+
+			shotCount++;
+			shotCount %= i;
+			if(shotCount == j-1 && distance <= 500) {
+				setFire(a);
+				shotCount= 0 ;
+			}
+
+			if (shotCount == k && distance <= 700){
+				setFire(a);
+				shotCount= 0 ;
+			}
+
+			if (shotCount == i-1){
+				setFire(a);
+				shotCount= 0 ;
+			}
+
+
 
 		}
 	}
 
-	/**
-	 * onHitWall: What to do when you hit a wall
-	 */
 	public void onHitWall(HitWallEvent e) {
 		reverse=true;
 		setTurnRight(90);
-
 	}
 
 	public void onBulletMissed(BulletMissedEvent e) {
@@ -174,6 +186,8 @@ public class Brobot extends AdvancedRobot
 
 	}
 
+
+	// Provides very rough estimation for offset to attempt to hit opponent at long ranges
 	private void initOffset(){
 		double maxDistance = Math.sqrt(Math.pow(getBattleFieldWidth(),2) + Math.pow(getBattleFieldHeight(),2));
 
@@ -190,14 +204,18 @@ public class Brobot extends AdvancedRobot
 		}
 		else {
 			if((getHeadingRadians()-enemy)<-(3.14/2) && (enemy-getHeadingRadians())>= (3.14/2)) {
-				offset=eDistance / maxDistance*0.4;
+				offset = eDistance / maxDistance*0.4;
 			} else {
-				offset=-eDistance / maxDistance*0.4;
+				offset = -eDistance / maxDistance*0.4;
 			}
 			offset*=velocity/4;
 		}
 	}
 
+	/*
+	 * The random color generating stuff. pfahaha
+	 */
+	
 	private void initColorAr() {
 		colorAr = new ArrayList<Color>();
 		colorAr.add(Color.black);
