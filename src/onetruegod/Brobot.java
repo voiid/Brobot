@@ -7,7 +7,6 @@ import java.util.Random;
 import robocode.AdvancedRobot;
 import robocode.BulletHitEvent;
 import robocode.BulletMissedEvent;
-import robocode.HitWallEvent;
 import robocode.ScannedRobotEvent;
 import robocode.WinEvent;
 import robocode.util.Utils;
@@ -37,7 +36,6 @@ public class Brobot extends AdvancedRobot {
 
 			// The most important part of brobot.
 			randColors();
-			setTurnRight(enemy + Math.PI);
 
 			double gunTurn = getHeadingRadians() + enemy -
 					getGunHeadingRadians();
@@ -56,7 +54,8 @@ public class Brobot extends AdvancedRobot {
 			 * for too long under certain circumstances.
 			 */
 			if(getX() <= 35) { 
-				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)) {
+				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)
+						&& eDistance >= 600) {
 					reverse=true;
 					setTurnRight(270);
 				} else {
@@ -65,7 +64,8 @@ public class Brobot extends AdvancedRobot {
 				}
 			}
 			if(getX() >= getBattleFieldWidth() - 35) { 
-				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)) {
+				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)
+						&& eDistance >= 600) {
 					reverse=true;
 					setTurnRight(270);
 				} else {
@@ -75,7 +75,8 @@ public class Brobot extends AdvancedRobot {
 			}
 
 			if(getY() >= getBattleFieldHeight() - 35) { 
-				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)) {
+				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)
+						&& eDistance >= 600) {
 					reverse=true;
 					setTurnRight(270);
 				} else {
@@ -85,7 +86,8 @@ public class Brobot extends AdvancedRobot {
 			}
 
 			if(getY() <= 35) {
-				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)) {
+				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)
+						&& eDistance >= 600) {
 					reverse=true;
 					setTurnRight(270);
 				} else {
@@ -183,11 +185,6 @@ public class Brobot extends AdvancedRobot {
 
 
 		}
-	}
-
-	public void onHitWall(HitWallEvent e) {
-//		reverse=true;
-//		setTurnRight(270);
 	}
 
 	public void onBulletMissed(BulletMissedEvent e) {
