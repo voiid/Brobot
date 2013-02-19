@@ -37,6 +37,7 @@ public class Brobot extends AdvancedRobot {
 
 			// The most important part of brobot.
 			randColors();
+			setTurnRight(enemy + Math.PI);
 
 			double gunTurn = getHeadingRadians() + enemy -
 					getGunHeadingRadians();
@@ -54,27 +55,43 @@ public class Brobot extends AdvancedRobot {
 			 * where robot rotates in wrong direction and sticking to the wall
 			 * for too long under certain circumstances.
 			 */
-			if(getX() <= 50) {
-				if((getHeadingRadians()>=3.14/2)&&(getHeadingRadians()<=1.5*3.14)) {
+			if(getX() <= 35) { 
+				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)) {
+					reverse=true;
+					setTurnRight(270);
+				} else {
 					reverse=true;
 					setTurnRight(90);
 				}
 			}
-			if(getX() >= getBattleFieldWidth()-50) { 
-				if((getHeadingRadians()<=3.14/2)||(getHeadingRadians()>=1.5*3.14)) {
+			if(getX() >= getBattleFieldWidth() - 35) { 
+				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)) {
+					reverse=true;
+					setTurnRight(270);
+				} else {
 					reverse=true;
 					setTurnRight(90);
 				}
 			}
 
-			if(getY() >= getBattleFieldHeight()-50) { 
-				reverse=true;
-				setTurnRight(90);
+			if(getY() >= getBattleFieldHeight() - 35) { 
+				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)) {
+					reverse=true;
+					setTurnRight(270);
+				} else {
+					reverse=true;
+					setTurnRight(90);
+				}
 			}
 
-			if(getY() <= 100) {
-				reverse=true;
-				setTurnRight(50);
+			if(getY() <= 35) {
+				if((getHeadingRadians() >= Math.PI/2) && (getHeadingRadians() <= Math.PI)) {
+					reverse=true;
+					setTurnRight(270);
+				} else {
+					reverse=true;
+					setTurnRight(90);
+				}
 			}
 
 
@@ -169,8 +186,8 @@ public class Brobot extends AdvancedRobot {
 	}
 
 	public void onHitWall(HitWallEvent e) {
-		reverse=true;
-		setTurnRight(90);
+//		reverse=true;
+//		setTurnRight(270);
 	}
 
 	public void onBulletMissed(BulletMissedEvent e) {
@@ -215,7 +232,7 @@ public class Brobot extends AdvancedRobot {
 	/*
 	 * The random color generating stuff. pfahaha
 	 */
-	
+
 	private void initColorAr() {
 		colorAr = new ArrayList<Color>();
 		colorAr.add(Color.black);
